@@ -25,7 +25,8 @@ exclude = [
     "testing/wasm-lightclient-tests",
     "signer/wasm-tests",
     "examples/wasm-example",
-    "examples/parachain-example"
+    "examples/parachain-example",
+    "examples/substrate-node-example"
 ]
 resolver = "2"
 

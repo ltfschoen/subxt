@@ -25,3 +25,8 @@ sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "ma
 sp-keyring = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
 sp-weights = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "master" }
+
+jsonrpsee = { version = "0.22", features = ["jsonrpsee-types"] }
+
+# Reconnecting jsonrpc ws client
+reconnecting-jsonrpsee-ws-client = { version = "0.3" }

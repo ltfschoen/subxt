@@ -1,10 +1,14 @@
 #![allow(missing_docs)]
+
+use reconnecting_jsonrpsee_ws_client::{Client, ExponentialBackoff, PingConfig};
+use std::time::Duration;
+// use subxt::error::{Error, RpcError};
 use subxt::backend::{legacy::LegacyRpcMethods, rpc::RpcClient};
+use subxt::backend::rpc::RpcClientT;
 use subxt::config::DefaultExtrinsicParamsBuilder as Params;
 use subxt::{OnlineClient, PolkadotConfig};
 use subxt_signer::sr25519::dev;
 // use pallet_identity::{legacy::IdentityInfo, Data};
-
 // use sp_runtime::BoundedVec;
 // use sp_core::bounded_vec::BoundedVec;
 // use frame_support::BoundedVec;
@@ -32,16 +36,63 @@ impl Default for Data {
 	}
 }
 
+impl<Data> From<Vec<Data>> for BoundedVec4<Data> {
+	fn from(v: Vec<Data>) -> Self {
+		BoundedVec4(v)
+	}
+}
+
+// newtype pattern
+// https://stackoverflow.com/a/25415289/3208553
+struct RpcClientT(RpcClient);
+impl From<Client> for RpcClientT {
+    fn from(c: Client) -> Self {
+		c.into()
+	}
+}
+
+// struct RpcClientZ(Box<dyn RpcClientT>);
+// impl From<Client> for RpcClientZ {
+//     fn from(c: Client) -> Self {
+// 		c.into()
+// 	}
+// }
+
+struct ClientT(Client);
+impl From<RpcClient> for ClientT {
+    fn from(c: RpcClient) -> Self {
+		c.into()
+	}
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // First, create a raw RPC client:
-    let rpc_client = RpcClient::from_url("ws://127.0.0.1:9944").await?;
+    // Create a new client with with a reconnecting RPC client.
+    let rpc = Client::builder()
+        // Reconnect with exponential backoff
+        //
+        // This API is "iterator-like" so one could limit it to only
+        // reconnect x times and then quit.
+        .retry_policy(ExponentialBackoff::from_millis(100).max_delay(Duration::from_secs(10)))
+        // Send period WebSocket pings/pongs every 6th second and if it's not ACK:ed in 30 seconds
+        // then disconnect.
+        //
+        // This is just a way to ensure that the connection isn't idle if no message is sent that often
+        .enable_ws_ping(
+            PingConfig::new()
+                .ping_interval(Duration::from_secs(6))
+                .inactive_limit(Duration::from_secs(30)),
+        )
+        // There are other configurations as well that can be found here:
+        // <https://docs.rs/reconnecting-jsonrpsee-ws-client/latest/reconnecting_jsonrpsee_ws_client/struct.ClientBuilder.html>
+        .build("ws://127.0.0.1:9944".to_string())
+        .await?;
 
-    // Use this to construct our RPC methods:
-    let rpc = LegacyRpcMethods::<PolkadotConfig>::new(rpc_client.clone());
-
-    // We can use the same client to drive our full Subxt interface too:
-    let api = OnlineClient::<PolkadotConfig>::from_rpc_client(rpc_client.clone()).await?;
+    // let rpc_client = RpcClient::from_url("ws://127.0.0.1:9944").await?;
+    // let rpc_legacy = LegacyRpcMethods::<PolkadotConfig>::new(rpc_client.clone());
+    let api = OnlineClient::<PolkadotConfig>::from_rpc_client(rpc.clone()).await?;
+    // let api: OnlineClient<PolkadotConfig> =
+    //     OnlineClient::from_rpc_client(RpcClient::new(rpc.clone())).await?;
 
     // Now, we can make some RPC calls using some legacy RPC methods.
     println!(
@@ -96,6 +147,5 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //     .sign_and_submit_then_watch(&tx_payload, &dev::alice(), tx_config)
     //     .await;
 
-    println!("Submitted ext {ext_hash} with nonce {current_nonce}");
     Ok(())
 }

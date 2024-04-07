@@ -88,44 +88,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tx_payload = runtime::tx().identity().set_identity(info);
     println!("tx_payload {:?}", tx_payload);
 
-
-    // // Build extrinsic params using an asset at this location as a tip:
-    // let location: MultiLocation = MultiLocation {
-    //     parents: 3,
-    //     interior: Junctions::Here,
-    // };
-    // let tx_config = DefaultExtrinsicParamsBuilder::<AssetHubConfig>::new()
-    //     .tip_of(1234, location)
+    // let tx_config = DefaultExtrinsicParamsBuilder::<PolkadotConfig>::new()
     //     .build();
-
-    // // And provide the extrinsic params including the tip when submitting a transaction:
-    // let _ = client
-    //     .tx()
+    // // provide the extrinsic params when submitting a transaction
+    // let _ = api
+    //     .api::transaction)
     //     .sign_and_submit_then_watch(&tx_payload, &dev::alice(), tx_config)
     //     .await;
 
-
-
-        // let current_nonce = rpc
-        //     .system_account_next_index(&alice.public_key().into())
-        //     .await?;
-        // let current_header = rpc.chain_get_header(None).await?.unwrap();
-
-        // let ext_params = Params::new()
-        //     .mortal(&current_header, 8)
-        //     .nonce(current_nonce)
-        //     .build();
-
-        // let balance_transfer = polkadot::tx()
-        //     .balances()
-        //     .transfer_allow_death(bob.public_key().into(), 1_000_000);
-
-        // let ext_hash = api
-        //     .tx()
-        //     .create_signed_offline(&balance_transfer, &alice, ext_params)?
-        //     .submit()
-        //     .await?;
-
-        // println!("Submitted ext {ext_hash} with nonce {current_nonce}");
+    println!("Submitted ext {ext_hash} with nonce {current_nonce}");
     Ok(())
 }

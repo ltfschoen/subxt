@@ -4,7 +4,7 @@ use reconnecting_jsonrpsee_ws_client::{Client, ExponentialBackoff, PingConfig};
 use std::time::Duration;
 // use subxt::error::{Error, RpcError};
 use subxt::backend::{legacy::LegacyRpcMethods, rpc::RpcClient};
-use subxt::backend::rpc::RpcClientT;
+// use subxt::backend::rpc::RpcClientT;
 use subxt::config::DefaultExtrinsicParamsBuilder as Params;
 use subxt::{OnlineClient, PolkadotConfig};
 use subxt_signer::sr25519::dev;

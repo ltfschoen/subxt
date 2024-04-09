@@ -5,6 +5,10 @@ edition = "2021"
 
 [workspace]
 
+[features]
+# Enable this to use the reconnecting rpc client
+unstable-reconnecting-rpc-client = ["dep:reconnecting-jsonrpsee-ws-client"]
+
 [dependencies]
 subxt = { path = "../../subxt" }
 subxt-signer = { path = "../../signer" }
@@ -29,4 +33,4 @@ sp-weights = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = 
 jsonrpsee = { version = "0.22", features = ["jsonrpsee-types"] }
 
 # Reconnecting jsonrpc ws client
-reconnecting-jsonrpsee-ws-client = { version = "0.3" }
+reconnecting-jsonrpsee-ws-client = { version = "0.3", optional = true }

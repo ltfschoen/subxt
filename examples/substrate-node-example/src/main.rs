@@ -42,28 +42,28 @@ impl<Data> From<Vec<Data>> for BoundedVec4<Data> {
 	}
 }
 
-// newtype pattern
-// https://stackoverflow.com/a/25415289/3208553
-struct RpcClientT(RpcClient);
-impl From<Client> for RpcClientT {
-    fn from(c: Client) -> Self {
-		c.into()
-	}
-}
-
-// struct RpcClientZ(Box<dyn RpcClientT>);
-// impl From<Client> for RpcClientZ {
+// // newtype pattern
+// // https://stackoverflow.com/a/25415289/3208553
+// struct RpcClientT(RpcClient);
+// impl From<Client> for RpcClientT {
 //     fn from(c: Client) -> Self {
 // 		c.into()
 // 	}
 // }
 
-struct ClientT(Client);
-impl From<RpcClient> for ClientT {
-    fn from(c: RpcClient) -> Self {
-		c.into()
-	}
-}
+// // struct RpcClientZ(Box<dyn RpcClientT>);
+// // impl From<Client> for RpcClientZ {
+// //     fn from(c: Client) -> Self {
+// // 		c.into()
+// // 	}
+// // }
+
+// struct ClientT(Client);
+// impl From<RpcClient> for ClientT {
+//     fn from(c: RpcClient) -> Self {
+// 		c.into()
+// 	}
+// }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -90,7 +90,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // let rpc_client = RpcClient::from_url("ws://127.0.0.1:9944").await?;
     // let rpc_legacy = LegacyRpcMethods::<PolkadotConfig>::new(rpc_client.clone());
-    let api = OnlineClient::<PolkadotConfig>::from_rpc_client(rpc.clone()).await?;
+    let api = OnlineClient::<PolkadotConfig>::from_rpc_client(RpcClient::new(rpc.clone())).await?;
     // let api: OnlineClient<PolkadotConfig> =
     //     OnlineClient::from_rpc_client(RpcClient::new(rpc.clone())).await?;
 

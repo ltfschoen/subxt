@@ -1,9 +1,9 @@
 #![allow(missing_docs)]
 
-use reconnecting_jsonrpsee_ws_client::{Client, ExponentialBackoff, PingConfig};
 use std::time::Duration;
 // use subxt::error::{Error, RpcError};
 use subxt::backend::{legacy::LegacyRpcMethods, rpc::RpcClient};
+use subxt::backend::rpc::reconnecting_rpc_client::{Client, ExponentialBackoff, PingConfig};
 // use subxt::backend::rpc::RpcClientT;
 use subxt::config::DefaultExtrinsicParamsBuilder as Params;
 use subxt::{OnlineClient, PolkadotConfig};
@@ -73,20 +73,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         //
         // This API is "iterator-like" so one could limit it to only
         // reconnect x times and then quit.
-        .retry_policy(ExponentialBackoff::from_millis(100).max_delay(Duration::from_secs(10)))
+        .retry_policy(ExponentialBackoff::from_millis(100).max_delay(Duration::from_secs(2)))
         // Send period WebSocket pings/pongs every 6th second and if it's not ACK:ed in 30 seconds
         // then disconnect.
         //
         // This is just a way to ensure that the connection isn't idle if no message is sent that often
         .enable_ws_ping(
             PingConfig::new()
-                .ping_interval(Duration::from_secs(6))
-                .inactive_limit(Duration::from_secs(30)),
+                .ping_interval(Duration::from_secs(2)),
+                // .inactive_limit(Duration::from_secs(30)),
         )
         // There are other configurations as well that can be found here:
         // <https://docs.rs/reconnecting-jsonrpsee-ws-client/latest/reconnecting_jsonrpsee_ws_client/struct.ClientBuilder.html>
         .build("ws://127.0.0.1:9944".to_string())
         .await?;
+
+    println!("Connected via RPC");
 
     // let rpc_client = RpcClient::from_url("ws://127.0.0.1:9944").await?;
     // let rpc_legacy = LegacyRpcMethods::<PolkadotConfig>::new(rpc_client.clone());
@@ -95,16 +97,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //     OnlineClient::from_rpc_client(RpcClient::new(rpc.clone())).await?;
 
     // Now, we can make some RPC calls using some legacy RPC methods.
-    println!(
-        "📛 System Name: {:?}\n🩺 Health: {:?}\n🖫 Properties: {:?}\n🔗 Chain: {:?}\n",
-        rpc.system_name().await?,
-        rpc.system_health().await?,
-        rpc.system_properties().await?,
-        rpc.system_chain().await?
-    );
+    // println!(
+    //     "📛 System Name: {:?}\n🩺 Health: {:?}\n🖫 Properties: {:?}\n🔗 Chain: {:?}\n",
+    //     rpc.system_name().await?,
+    //     rpc.system_health().await?,
+    //     rpc.system_properties().await?,
+    //     rpc.system_chain().await?
+    // );
 
     let alice_signer = dev::alice();
     let alice_public_key = dev::alice().public_key();
+
+    println!("XXX Creating bounded vec");
 
     // let value: u32 = 123;
     // let encoded: Vec<u8> = value.encode();
@@ -119,6 +123,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 		(Data::None, Data::None),
 	])
 	.unwrap();
+
+    println!("XXX Creating identity info");
 
     let info = IdentityInfo {
         additional: my_bounded_vec,
@@ -136,6 +142,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 		image: Data::default(),
 		twitter: Data::default(),
 	};
+
+    println!("XXX Setting identity");
+
     let tx_payload = runtime::tx().identity().set_identity(info);
     println!("tx_payload {:?}", tx_payload);
 
